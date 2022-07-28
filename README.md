@@ -1,4 +1,4 @@
-#TESTER MODEMS CELULARES version 0.0.1
+# TESTER MODEMS CELULARES version 0.0.1
 
 Script para prueba de modems celulares basados en comandos AT.
 
@@ -7,7 +7,7 @@ Version 0.0.1 poc para Quectel BG95
 Se puede portar para otros modulos modificando Commands.py y Modem.py
 El truco lo hace la clase Command.py
 
-###Instrucciones
+### Instrucciones
 
 Sumamente basicas. Dejen su nota si requieren ayuda.
 
