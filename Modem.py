@@ -6,6 +6,8 @@ import sys
 
 CTRL_Z = chr(26)
 
+#TODO Modem trae la logica de envio que trae Command. Debe ser el driver hacia el dispositivo fisico.
+
 class Modem(object):
     
     serial = serial.Serial()
@@ -41,8 +43,7 @@ class Modem(object):
         print("[modem] Termina y reinicia")
         time.sleep(5)
         self.close()
-        print("[modem] Adios")
-        sys.exit() 
+
 
     def exit_no_port(self):
         print("[modem] Puerto no encontrado")

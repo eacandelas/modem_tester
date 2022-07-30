@@ -1,5 +1,5 @@
 import time
-
+#TODO Command solo debe traer los parametros elaborados del comando.
 class Command:
     ERROR_COUNT_MAX = 3
     error_count = 0

@@ -13,7 +13,7 @@ class ModuloBG95(Modem):
 
     def __init__(self, port, baudrate, url, portServer, payload ):
         Modem.__init__(self, port, baudrate)
-        self.estado_actual = "none"
+        self.estadoFSM = "inicio"
         self.url = url
         self.portServer = portServer
         self.payload = payload
@@ -21,21 +21,38 @@ class ModuloBG95(Modem):
         print("[cmt]Modem BG95 creado")
 
     #ESTADOS
-    
+
+    def config(self):
+        if self.comandos.bg95_cmd_at.send() == False:
+            self.estado_fsmConfig = "error"
+            return
+ 
+        if self.comandos.bg95_cmd_ate.send() == False:
+            self.estado_fsmConfig = "error"
+            return
+
+        self.estado_fsmConfig = "ok"
+
+            
     def attach(self):
-        self.comandos.bg95_cmd_at.send()
-        self.comandos.bg95_cmd_ate.send()
-        self.comandos.bg95_cmd_cereg.send()
-        self.comandos.bg95_cmd_qicsgp.send()
-        self.comandos.bg95_cmd_cgattQ.send()
-        self.comandos.bg95_cmd_copsQ.send()
-        result = self.comandos.bg95_cmd_qiactQ.send() #TODO agregar busqueda de IP
-        if result:
-            print("[bg95] ========= attached =========\r\n")
-            self.estado_actual = "attached"
-        else:
-            print("[bg95] falla en attach")
-            self.estado_actual = "open"
+        if self.comandos.bg95_cmd_cereg.send() == False:
+            self.estado_fsmAttach = "error"
+            return
+        if self.comandos.bg95_cmd_qicsgp.send() == False:
+            self.estado_fsmAttach = "error"
+            return
+        if self.comandos.bg95_cmd_cgattQ.send() == False:
+            self.estado_fsmAttach = "error"
+            return
+        if self.comandos.bg95_cmd_copsQ.send() == False:
+            self.estado_fsmAttach = "error"
+            return
+        if self.comandos.bg95_cmd_qiactQ.send()  == False:
+            self.estado_fsmAttach = "error"
+            return
+
+        self.estado_fsmAttach = "ok"
+
 
     def connect(self):
         self.result = self.comandos.bg95_cmd_qiopen.send()
@@ -99,37 +116,78 @@ class ModuloBG95(Modem):
             print("[bg95]No hubo +QIURC")
             self.estado_actual = "error"
 
+    def complete():
+        pass
 
     def fsm(self):
-        if self.estado_actual == "inicio":
+        if self.estadoFSM == "inicio":
             self.init()
             if self.estadoModem == "abierto":
-                self.estadoFSM = "open"
+                self.estadoFSM = "config"
             else:
-                self.estadoFSM = "error"
-
-        # elif self.estado_actual == "open":
-        #     self.attach()
-
-        # elif self.estado_actual == "attached":
-        #     self.connect()
-
-        # elif self.estado_actual == "conectado":
-        #     self.send()
+                self.estadoFSM = "error_no_port"
         
-        # elif self.estado_actual == "receive":
-        #     self.receive()
+        elif self.estadoFSM == "config":
+            self.config()
+            if self.estado_fsmConfig == "ok":
+                print(" === Config OK ===")
+                self.estadoFSM = "attach"
+            else:
+                self.estadoFSM = "error_cfg"
+
+        elif self.estadoFSM == "attach":
+            self.attach()
+            if self.estado_fsmAttach == "ok":
+                print(" === Attach OK ===")
+                self.estadoFSM = "connect"
+            else:
+                self.estadoFSM = "error_attach"
+
+        elif self.estadoFSM == "connect":
+            self.connect()
+            if self.estado_fsmConnect == "ok":
+                print(" === Connect OK ===")
+                self.estadoFSM = "connect"
+            else:
+                self.estadoFSM = "error_connect"
+
+        elif self.estadoFSM == "send":
+            self.send()
+            if self.estado_fsmSend == "ok":
+                print(" === Connect OK ===")
+                self.estadoFSM = "connect"
+            else:
+                self.estadoFSM = "error_send"            
         
-        # elif self.estado_actual == "completo":
-        #     self.terminate()
+        elif self.estadoFSM == "receive":
+            self.receive()
+            if self.estado_fsmReceive == "ok":
+                print(" === Connect OK ===")
+                self.estadoFSM = "connect"
+            else:
+                self.estadoFSM = "error_receive"   
+        
+        elif self.estadoFSM == "complete":
+            self.complete()
+            if self.estado_fsmReceive == "ok":
+                print(" === Connect OK ===")
+                self.estadoFSM = "connect"
+            else:
+                self.estadoFSM = "error_receive"  
 
-        # elif self.estado_actual == "cerrado":
-        #     self.terminate()
+        elif self.estadoFSM == "cerrar":
+            self.close()
 
-        elif self.estado_actual == "error":
-            self.exit_no_port()
+        elif self.estadoFSM == "error_no_port" :
+            print("[SIM5320] Puerto no encontrado")
+            print("[SIM5320] Adios")
+            sys.exit(2) 
 
-        # elif self.estado_actual == "no port":
+        elif self.estadoFSM == "error_cfg":
+            self.close()
+            self.estadoFSM = "none"
+
+        # elif self.estadoFSM == "no port":
         #     self.exit_no_port()
 
         else:
@@ -137,7 +195,6 @@ class ModuloBG95(Modem):
             sys.exit()
 
     def run(self):
-        # self.init()
         while True:
             self.fsm()
             time.sleep(0.1)

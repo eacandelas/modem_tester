@@ -5,7 +5,6 @@ from Simcom_5320.ModuloSIM5320 import Modulo5320 as SIM5320
 import getopt
 
 class Tester:
-
     def __init__(self):
         self.puerto = "COM1"
         self.puerto = 115200
@@ -13,7 +12,7 @@ class Tester:
         self.mode   = "param_mode"
         self.modulo  = None
 
-    def procesar_parametros(self, argv):
+    def procesar_parametros_entrada(self, argv):
 
         arg_help = "\r\n[cmt]{0} -p <puerto> -b <bauds> -m <modulo>\r\n".format(argv[0])
 
@@ -45,13 +44,13 @@ class Tester:
             elif opt in ("-b", "--bauds"):
                 self.bauds = arg
             elif opt in ("-m", "--modulo"):
-                self.modulo = arg
+                self.tipoModulo = arg
 
         print("[cmt]puerto: {}".format(self.puerto))
         print('[cmt]bauds: {}'.format(self.bauds))
         print('[cmt]tipoModulo: {}'.format(self.tipoModulo))
 
-    def get_inputs(self): 
+    def obtener_parametros_cli(self): 
         if self.mode == "input_mode":
             self.tipoModulo = input("Ingresa modulo [BG95, SIM5320]: ")
             self.port = input("Ingresa puerto: ")
@@ -74,22 +73,22 @@ class Tester:
     def crear_modulo(self):
 
         if self.tipoModulo == "BG95":
-            self.modem = BG95(self.port, int(self.baudrate), self.url, self.serverPort, self.payload)
+            self.modulo = BG95(self.port, int(self.baudrate), self.url, self.serverPort, self.payload)
         elif self.tipoModulo == "SIM5320":
-            self.modem = SIM5320(self.port, int(self.baudrate), self.url, self.serverPort, self.payload)
+            self.modulo = SIM5320(self.port, int(self.baudrate), self.url, self.serverPort, self.payload)
         else:
             print("[cmt]Modulo desconocido ")
             sys.exit(2)
 
     def run(self):
-        self.modem.run()
+        self.modulo.run()
  
 
 
 if __name__ == '__main__':
     tester = Tester()
-    tester.procesar_parametros(sys.argv)
-    tester.get_inputs()
+    tester.procesar_parametros_entrada(sys.argv)
+    tester.obtener_parametros_cli()
     tester.crear_modulo()
 
     tester.run()
