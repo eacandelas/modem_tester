@@ -1,11 +1,16 @@
-# TESTER MODEMS CELULARES version 0.0.1
+# TESTER MODEMS CELULARES version 0.1.0
 
 Script para prueba de modems celulares basados en comandos AT.
 
-Version 0.0.1 poc para Quectel BG95
+Version 0.1.0 poc para Quectel BG95
 
-Se puede portar para otros modulos modificando Commands.py y Modem.py
-El truco lo hace la clase Command.py
+Tres clases principales:
+
+Tester() - Se encarga de la adquisicion de los parametros desde el cli, crear el modulo a utilizar y ejecutarlo.
+ModuloXXXX() - Crea una instancia del modulo seleccionado. Modulo extiende Modem() que tiene el manejo del puerto serial y sus estados (abierto, cerrado)
+Command() - Es el driver para la comunicacion serial con el modulo fisico.
+
+Hay un Moduloxxxx.py y un CommandsXXX.py por cada dispositivo soportado.
 
 ### Instrucciones
 
@@ -20,7 +25,10 @@ Software.
 - Clona el repositorio.
 - Crea un ambiente virtual y activalo.
 - Instala pyserial dentro del ambiente.
-- Modifica el archivo "quectel_tester.py" en la linea 5, cambia el COM22 y el baudrate por el valor de tu setup.
-- Modifica el archivo "CommandsBG95.py" en la linea 14, cambia el dominio y el puerto.
-- Modifica el archivo "CommandsBG95.py" en la linea 9, cambia el nombre de la red.
-- Ejecuta "quectel_tester.py"
+- Ejecuta "quectel_tester.py" con los tres parametros: -b <puerto serial> -b <baudrate> -m <modulo>
+- o Ejecuta solo el parametro.
+- Hay un prompt inicial que te pide los parametros faltantes.
+- El tester corre automaticamente.
+
+TODO: Muchas cosas por mejorar aun ... revisa el Roadmap.md
+
