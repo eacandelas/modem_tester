@@ -1,26 +1,30 @@
 from time import time
-import CommandsBG95
-import time
 import sys
+import serial
+import Quectel_BG95.CommandsBG95 as CommandsBG95
+import time
 
 CTRL_Z = chr(26)
 
 class Modem:
 
-    def __init__(self, serial, port, baudrate ):
+    serial = serial.Serial()
+
+    def __init__(self, port, baudrate ):
         self.estado_actual = "inicio"
-        self.serial = serial
         self.serial.baudrate = baudrate
         self.serial.port = port
-        self.comandos = CommandsBG95.Commands(serial)
+        self.comandos = CommandsBG95.Commands(self.serial)
         self.port = port
         self.baudrate = baudrate
     
     def init(self):
+        print('[bg95]Abriendo puerto . . .')
+        time.sleep(2)
         try:
             self.serial.open()
             print("[bg95]puerto {} abierto".format( self.serial.name))
-            # self.estado_actual = "open"
+        # self.estado_actual = "open"
             if self.comandos.bg95_cmd_at.send():
                 self.estado_actual = "open"
             else:
@@ -28,7 +32,7 @@ class Modem:
 
         except Exception as e:
             print('[bg95]Error on ser.open(): %s' % e)
-            self.estado_actual = "error"
+            self.estado_actual = "no port"
 
     def close(self):
         try:
@@ -46,6 +50,11 @@ class Modem:
         self.close()
         print("[bg95] Adios")
         sys.exit() 
+
+    def exit_no_port(self):
+        print("[bg95] Puerto no encontrado")
+        print("[bg95] Adios")
+        sys.exit(2) 
     
     def timer(self, t_inicio, delay):
         self.actual_time = time.time()
@@ -195,6 +204,9 @@ class Modem:
 
         elif self.estado_actual == "error":
             self.terminate()
+
+        elif self.estado_actual == "no port":
+            self.exit_no_port()
 
         else:
             print("[bg95] Adios")
