@@ -1,82 +1,98 @@
 
 import sys
-import Quectel_BG95.ModemBG95 as ModemBG95
-import Simcom_5320.ModemSIM5320 as sim5320
+from Quectel_BG95.ModuloBG95 import ModuloBG95 as BG95
+from Simcom_5320.ModuloSIM5320 import Modulo5320 as SIM5320
 import getopt
 
-#defaults 
+class Tester:
 
-g_puerto    = "COM1"
-g_bauds     = 9600
-g_modulo    = "BG95"
-g_mode      = "param_mode"
+    def __init__(self):
+        self.puerto = "COM1"
+        self.puerto = 115200
+        self.tipoModulo = "BG95" 
+        self.mode   = "param_mode"
+        self.modulo  = None
 
+    def procesar_parametros(self, argv):
 
+        arg_help = "\r\n[cmt]{0} -p <puerto> -b <bauds> -m <modulo>\r\n".format(argv[0])
 
-def cmt_procesar_parametros(argv):
-    global g_puerto
-    global g_bauds
-    global g_modulo
-    global g_mode
-    arg_help = "\r\n[cmt]{0} -p <puerto> -b <bauds> -m <modulo>\r\n".format(argv[0])
-
-
-
-    try:
-        opts, args = getopt.getopt(argv[1:], "h:p:b:m:", ["help", "puerto=", "bauds=", "modulo="])
-    except:
-        print(arg_help)
-        sys.exit(2)
-
-    if len(argv) == 1:
-        print("input mode")
-        g_mode = "input_modem"
-    elif len(argv) == 7:
-        print("param mode")
-        g_mode = "param_mode"
-
-    else:
-        print("[cmt]Debe especificar los tres parametros")
-        print(arg_help)
-        sys.exit(2)
-    
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            print(arg_help)  # print the help message
+        try:
+            opts, args = getopt.getopt(argv[1:], "h:p:b:m:", ["help", "puerto=", "bauds=", "modulo="])
+        except:
+            print(arg_help)
             sys.exit(2)
-        elif opt in ("-p", "--puerto"):
-            g_puerto = arg
-        elif opt in ("-b", "--bauds"):
-            g_bauds = arg
-        elif opt in ("-m", "--modulo"):
-            g_modulo = arg
 
-    print("[cmt]puerto: {}".format(g_puerto))
-    print('[cmt]bauds: {}'.format(g_bauds))
-    print('[cmt]modulo: {}'.format(g_modulo))
-    
-def cmt_crear_modem(_puerto, _bauds, _modulo, _mode):
+        if len(argv) == 1:
+            print("Input mode")
+            self.mode = "input_mode"
+            return self.mode
+        elif len(argv) == 7:
+            print("Param mode")
+            self.mode = "param_mode"
 
-    if _modulo == "BG95":
-        print("[cmt]Modem BG95 creado")
-        _modem = ModemBG95.Modem(_puerto, int(_bauds), _mode)
-    elif _modulo == "SIM5320":
-        print("[cmt]Modem SIM5320 creado")
-        _modem = sim5320.Modem(_puerto, int(_bauds), _mode)
-    else:
-        print("[cmt]Modulo desconocido ")
-        sys.exit(2)
+        else:
+            print("[cmt]Debe especificar los tres parametros")
+            print(arg_help)
+            sys.exit(2)
+        
+        for opt, arg in opts:
+            if opt in ("-h", "--help"):
+                print(arg_help)  # print the help message
+                sys.exit(2)
+            elif opt in ("-p", "--puerto"):
+                self.puerto = arg
+            elif opt in ("-b", "--bauds"):
+                self.bauds = arg
+            elif opt in ("-m", "--modulo"):
+                self.modulo = arg
 
-    return _modem  
+        print("[cmt]puerto: {}".format(self.puerto))
+        print('[cmt]bauds: {}'.format(self.bauds))
+        print('[cmt]tipoModulo: {}'.format(self.tipoModulo))
+
+    def get_inputs(self): 
+        if self.mode == "input_mode":
+            self.tipoModulo = input("Ingresa modulo [BG95, SIM5320]: ")
+            self.port = input("Ingresa puerto: ")
+            self.baudrate = int(input("Ingresa baudrate: "))
+        
+        self.url = input("ingresa url: ")
+        self.serverPort = input("Ingresa puerto: ")
+        self.payload = input("Ingresa payload: ")
+
+        print(f"\r\n======== tester params =======")
+        print(f"Tipo Modulo: {self.tipoModulo}")
+        print(f"Serial: {self.port} - {self.baudrate}")
+        print(f"Server: {self.url}:{self.serverPort}")
+        print(f"Payload: {self.payload}")
+        print(f"================================\r\n")
+
+        self.estado_actual = "none"
+
+   
+    def crear_modulo(self):
+
+        if self.tipoModulo == "BG95":
+            self.modem = BG95(self.port, int(self.baudrate), self.url, self.serverPort, self.payload)
+        elif self.tipoModulo == "SIM5320":
+            self.modem = SIM5320(self.port, int(self.baudrate), self.url, self.serverPort, self.payload)
+        else:
+            print("[cmt]Modulo desconocido ")
+            sys.exit(2)
+
+    def run(self):
+        self.modem.run()
+ 
 
 
 if __name__ == '__main__':
-    cmt_procesar_parametros(sys.argv)
-    modem = cmt_crear_modem(g_puerto, g_bauds, g_modulo, g_mode)
-       
-    try: 
-        modem.run()
-    except Exception as e:
-        print('[tester]Error: %s' % e)
+    tester = Tester()
+    tester.procesar_parametros(sys.argv)
+    tester.get_inputs()
+    tester.crear_modulo()
+
+    tester.run()
+
 
         
