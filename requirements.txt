@@ -1,0 +1,10 @@
+args==0.1.0
+click==8.1.3
+clint==0.5.1
+prompt-toolkit==1.0.14
+pyfiglet==0.8.post1
+pyserial==3.5
+regex==2022.7.25
+six==1.16.0
+termcolor==1.1.0
+wcwidth==0.2.5

@@ -2,10 +2,13 @@ from time import time
 import sys
 import serial
 from Modem import Modem
+from lib.utilidades import Utilidades
 import Quectel_BG95.CommandsBG95 as CommandsBG95
 import time
 
 CTRL_Z = chr(26)
+
+systemUtils = Utilidades()
 
 class ModuloBG95(Modem):
 
@@ -18,7 +21,7 @@ class ModuloBG95(Modem):
         self.portServer = portServer
         self.payload = payload
         self.comandos = CommandsBG95.Commands(self.serial)
-        print("[cmt]Modem BG95 creado")
+        systemUtils.printSuccessCLI("[cmt]Modem BG95 creado")
 
     #ESTADOS
 
@@ -63,20 +66,20 @@ class ModuloBG95(Modem):
                 print("[bg95]open answer") 
                 self.status_response = self.check_server_response(self.comandos.bg95_cmd_qiopen.datarx, "+QIOPEN: 0,0")
                 if self.status_response:
-                    print("[bg95] ========= conectado =========\r\n")
+                    systemUtils.printSuccessCLI("[bg95] ========= conectado =========\r\n")
                     self.estado_actual = "conectado"
                 else:
-                    print("[bg95] error al abrir puerto")
+                    systemUtils.printErrorCLI("[bg95] error al abrir puerto")
                     self.estado_actual = "error"
                     #TODO manejar error
             else:
                 self.response_str = self.wait_for_server_response(20)
                 self.status_response = self.check_server_response(self.response_str, "+QIOPEN: 0,0")
                 if self.status_response:
-                    print("[bg95] ========= conectado =========\r\n")
+                    systemUtils.printSuccessCLI("[bg95] ========= conectado =========\r\n")
                     self.estado_actual = "conectado"
                 else:
-                    print("[bg95] error al abrir puerto")
+                    systemUtils.printErrorCLI("[bg95] error al abrir puerto")
                     self.estado_actual = "error"
                     #TODO manejar error
         else:
@@ -91,11 +94,11 @@ class ModuloBG95(Modem):
             self.response_str = self.wait_for_server_response(20)
             self.status_response = self.check_server_response(self.response_str, "SEND OK")
             if  self.status_response:          
-                print("[bg95] Send correcto")
+                systemUtils.printSuccessCLI("[bg95] Send correcto")
                 self.estado_actual = "receive"
             else:
                 self.comandos.bg95_cmd_qiclose.send()
-                print("[bg95]No hubo +QIURC")
+                systemUtils.printErrorCLI("[bg95]No hubo +QIURC")
                 self.estado_actual = "error"
 
         else:

@@ -1,1 +1,6 @@
 .venv/
+lib/__pycache__/
+
+Quectel_BG95/__pycache__/
+
+Simcom_5320/__pycache__/
