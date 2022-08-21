@@ -8,3 +8,4 @@ regex==2022.7.25
 six==1.16.0
 termcolor==1.1.0
 wcwidth==0.2.5
+tqdm==4.64

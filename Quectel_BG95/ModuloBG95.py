@@ -119,7 +119,7 @@ class ModuloBG95(Modem):
             print("[bg95]No hubo +QIURC")
             self.estado_actual = "error"
 
-    def complete():
+    def complete(self):
         pass
 
     def fsm(self):

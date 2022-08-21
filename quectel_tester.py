@@ -3,34 +3,36 @@ from operator import mod
 import sys
 import os
 import subprocess
-import signal
+import signal 
 from wsgiref import simple_server
-import click
+import click 
 import time
 import getopt
 from tqdm import tqdm
 from termcolor import colored, cprint
 from pyfiglet import Figlet
 from pprint import pprint
-from threading import Thread, ThreadError
+# from threading import Thread, ThreadError
 from lib.serialAPI import SerialApi
-from lib.webService import WebService
+# from lib.webService import WebService
 from lib.utilidades import Utilidades
-from Quectel_BG95.ModuloBG95 import ModuloBG95 as BG95
-from Simcom_5320.ModuloSIM5320 import Modulo5320 as SIM5320
+from Quectel_BG95.ModuloBG95        import ModuloBG95 as BG95
+from Simcom_5320.ModuloSIM5320      import Modulo5320 as SIM5320
+from Quectel_BC660K.ModuloBC660K    import ModuloBC660K as BC660
 
 class TesterCLI:
     def __init__(self):
         self.listadoModulos = {
             "BG95": BG95,
-            "SIM5320": SIM5320
+            "SIM5320": SIM5320,
+            "BC660K" : BC660
         }
-        self.sapi = SerialApi()
-        self.puerto = self.sapi.sistemComPort()
-        self.baudrate = 115200
+        self.sapi       = SerialApi()
+        self.puerto     = self.sapi.sistemComPort()
+        self.baudrate   = 115200
         self.tipoModulo = "BG95" 
-        self.mode   = "param_mode"
-        self.modulo  = None
+        self.mode       = "param_mode"
+        self.modulo     = None
     
     def listadoModulosDisponibles(self):
         """
@@ -55,6 +57,7 @@ class TesterCLI:
         """
         print("Interrumpiendo CLI")
         sys.exit(0)
+
 class Tester:
     def __init__(self):
         self.puerto = "COM1"
@@ -171,6 +174,7 @@ def run():
     listadoModulos = testercli.listadoModulosDisponibles()
     systemUtils.headerCLI(" Puertos seriales disponibles ")
     serialDevicesAvailable = sapi.availableDevices()
+
     for count, serialDevice in enumerate(serialDevicesAvailable):
         click.echo("[{}] {}".format(count,serialDevice))
     
@@ -182,18 +186,23 @@ def run():
     #Configuracion baudrate
     systemUtils.headerCLI(" Baudrates disponibles ")
     listaBaudrate = sapi.listadoBaudratesDisponibles()
+
     for count, baudrate in enumerate(listaBaudrate):
         click.echo("[{}] {}".format(count, baudrate))
+
     baudrateSelected = click.prompt('Selecciona el numero del baudrate: ', type=int)
     testercli.baudrate = listaBaudrate[baudrateSelected]
     click.clear()
     testercli.headerConfiguration()
+
     #Configuracion del modulo
     systemUtils.headerCLI(" Modulos disponibles ")
     modulosDisponibles = listadoModulos.keys()
     arrayModulosDisponibles = list(modulosDisponibles)
+
     for count, modulo in enumerate(modulosDisponibles):
         click.echo("[{}] {}".format(count,modulo))
+
     moduloSelected = click.prompt('Selecciona el numero del modulo: ', type=int)
     testercli.tipoModulo = arrayModulosDisponibles[moduloSelected]
     testercli.modulo = listadoModulos[testercli.tipoModulo](testercli.puerto, testercli.baudrate, "localhost", 5000, "Hola mundo")
@@ -238,26 +247,6 @@ def modulos():
     for count, modulo in enumerate(listadoModulos.keys()):
         click.echo("[{}] {}".format(count,modulo))
     
-
-@mainTester.command()
-def web():
-    """
-    Corre un servidor de pruebas.
-    """
-    systemUtils.headerCLI(" Correiendo servidor de pruebas ")
-    systemUtils.printSuccessCLI("Servidor corriendo en http://localhost:5000")
-    webService.runWebService()
-
-@mainTester.command()
-def stop():
-    """
-    Detiene el servidor web.
-    """
-    systemUtils.headerCLI(" Detener servidor web ")
-    webService.stopWebService()
-    systemUtils.printSuccessCLI("Servidor web detenido")
-
-
 @mainTester.command()
 @click.argument('subcommand')
 @click.pass_context
@@ -275,8 +264,6 @@ if __name__ == '__main__':
     testercli   = TesterCLI()
     sapi        = SerialApi()
     systemUtils = Utilidades()
-    webService  = WebService()
-    threadWebservice = Thread(target=webService.runWebService)
     mainTester()
     signal.signal(signal.SIGINT, testercli.interrumpirCli)
 
